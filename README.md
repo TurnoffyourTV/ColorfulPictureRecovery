@@ -32,13 +32,13 @@
 
 ```python
 
-pic_name = '../turkmen.tif'  #图片名
+pic_name = '../turkmen.tif'  #图片名
  
-im =  cv.imread(pic_name)  #将图像转换为8位无符号整数格式
+im =  cv.imread(pic_name)  #将图像转换为8位无符号整数格式
  
 if '.tif' in pic_name:
  
-    im=skimage.util.img_as_ubyte(im)
+    im=skimage.util.img_as_ubyte(im)
  
 im = cv.cvtColor(im,cv.COLOR_BGR2GRAY)
  
@@ -56,103 +56,103 @@ im_old = im.copy()
  
 #计算高斯核函数
  
-    def gausskernel(size):  
+    def gausskernel(size):  
  
-    sigma=0.8
+    sigma=0.8
  
-    gausskernel=np.zeros((size,size),np.float32)
+    gausskernel=np.zeros((size,size),np.float32)
  
-    k = int(size/2)
+    k = int(size/2)
  
-    print(k)
+    print(k)
  
-    for i in range (size):
+    for i in range (size):
  
-        for j in range (size):
+        for j in range (size):
  
-            norm=math.pow(i-k,2)+pow(j-k,2)
+            norm=math.pow(i-k,2)+pow(j-k,2)
  
-            gausskernel[i,j]=math.exp(-norm/(2*math.pow(sigma,2)))    
+            gausskernel[i,j]=math.exp(-norm/(2*math.pow(sigma,2)))    
  
-    sum=np.sum(gausskernel)   # 求和
+    sum=np.sum(gausskernel)   # 求和
  
-    kernel=gausskernel/sum   # 归一化
+    kernel=gausskernel/sum   # 归一化
  
 return kernel
  
  
  
-def pyramid_Gauss(image):   
+def pyramid_Gauss(image):   
  
-    kernel=gausskernel(3)        #阶数取3
+    kernel=gausskernel(3)        #阶数取3
  
-    temp = image.copy() 
+    temp = image.copy() 
  
-    (length,width) = temp.shape[:2]
+    (length,width) = temp.shape[:2]
  
-    length = length / 3.0
+    length = length / 3.0
  
-    cnt = 0  
+    cnt = 0  
  
 #当图片过大对其构造高斯金字塔使其大小小于一定限度
  
-    while length * width > 250000 :
+    while length * width > 250000 :
  
-        cnt = cnt + 1
+        cnt = cnt + 1
  
-        temp = pyramid_Down(temp,kernel)
+        temp = pyramid_Down(temp,kernel)
  
-        (length,width) = temp.shape[:2]     
+        (length,width) = temp.shape[:2]     
  
-    cv.imshow("pyramid_down_" , temp)       
+    cv.imshow("pyramid_down_" , temp)       
  
-    return temp,cnt
+    return temp,cnt
  
  
  
 def pyramid_Down(image,kernel):
  
-    (length,width) = image.shape[:2]
+    (length,width) = image.shape[:2]
  
-    img1 = np.zeros((length,width),np.uint8)
+    img1 = np.zeros((length,width),np.uint8)
  
 # 高斯滤波过滤
  
-    for i in range (1,length-1):
+    for i in range (1,length-1):
  
-        for j in range (1,width-1):
+        for j in range (1,width-1):
  
-            print(i,j)
+            print(i,j)
  
-            s = 0
+            s = 0
  
-            for k in range(-1,2):
+            for k in range(-1,2):
  
-                for l in range(-1,2):
+                for l in range(-1,2):
  
-                    s = s + image[i+k,j+l]*kernel[k+1,l+1]  
+                    s = s + image[i+k,j+l]*kernel[k+1,l+1]  
  
-            img1[i,j] = s
+            img1[i,j] = s
  
-   #删去一半的行和列，构造高斯金字塔1
+   #删去一半的行和列，构造高斯金字塔1
  
-    cnt = 0
+    cnt = 0
  
-    for i in range(length):
+    for i in range(length):
  
-        if i % 2 == 1:
+        if i % 2 == 1:
  
-            img1 = np.delete(img1, i - cnt, axis=0)
+            img1 = np.delete(img1, i - cnt, axis=0)
  
-            cnt = cnt + 1
+            cnt = cnt + 1
  
-    cnt = 0
+    cnt = 0
  
-    for j in range(width):    #删列操作与上文类似，在此省略
+    for j in range(width):    #删列操作与上文类似，在此省略
  
-        ……
+        ……
  
-    #主函数调用上述函数完成操作
+    #主函数调用上述函数完成操作
  
 im,count = pyramid_Gauss(im)
  
@@ -163,58 +163,58 @@ print('pyramid finished!')
 
 思路描述：由公式：
 
-SSD(u,v) =  Sum{[Ima_1(u+x,v+y) – Ima_2(x,y)] ^2} 
+SSD(u,v) =  Sum{[Ima_1(u+x,v+y) – Ima_2(x,y)] ^2}
 
 可计算并比较图层间的相似程度。
 
 ```python
 def find_min_ssd(img_1,img_2,r_lim,d_lim):
  
-      #寻找两幅图片的最小ssd所需平移的坐标
+      #寻找两幅图片的最小ssd所需平移的坐标
  
-      #img_1固定，img_2平移的空间为[-r_lim,-d_lim] -> [r_lim,d_lim]
+      #img_1固定，img_2平移的空间为[-r_lim,-d_lim] -> [r_lim,d_lim]
  
-      length,width = img_1.shape[:2]
+      length,width = img_1.shape[:2]
  
  
  
-      #最小ssd初始化为无穷大
+      #最小ssd初始化为无穷大
  
-      min_ssd = float("inf")
+      min_ssd = float("inf")
  
-      min_r = 0
+      min_r = 0
  
-      min_d = 0
+      min_d = 0
  
-      sum_ssd = 0
+      sum_ssd = 0
  
-      for r_dis in range(-r_lim,r_lim+1):
+      for r_dis in range(-r_lim,r_lim+1):
  
-          for d_dis in range(-d_lim,d_lim+1):
+          for d_dis in range(-d_lim,d_lim+1):
  
-              sum_ssd = 0
+              sum_ssd = 0
  
-              for i in range(length):
+              for i in range(length):
  
-                  for j in range(width):
+                  for j in range(width):
  
-                      x = i + d_dis
+                      x = i + d_dis
  
-                      y = j + r_dis
+                      y = j + r_dis
  
-                      if(x >= 0 and x < length and y >= 0 and y < width):
+                      if(x >= 0 and x < length and y >= 0 and y < width):
  
-                          sum_ssd = sum_ssd + (int(img_1[x,y])-int(img_2[i,j])) * (int(img_1[x,y])-int(img_2[i,j]))
+                          sum_ssd = sum_ssd + (int(img_1[x,y])-int(img_2[i,j])) * (int(img_1[x,y])-int(img_2[i,j]))
  
-              sum_ssd = sum_ssd
+              sum_ssd = sum_ssd
  
-              if sum_ssd < min_ssd:
+              if sum_ssd < min_ssd:
  
-                  min_r = r_dis
+                  min_r = r_dis
  
-                  min_d = d_dis
+                  min_d = d_dis
  
-                  min_ssd = sum_ssd
+                  min_ssd = sum_ssd
  
 return min_r,min_d
  
@@ -255,17 +255,17 @@ b2 = int(b2 * k)
 
 def translate(img,tx,ty):
  
-    #图像平移
+    #图像平移
  
-    length,width = img.shape[:2]
+    length,width = img.shape[:2]
  
-    m = np.float32([[1,0,tx],[0,1,ty]])
+    m = np.float32([[1,0,tx],[0,1,ty]])
  
 #仿射变换
  
-    res = cv.warpAffine(img,m,(width,length))
+    res = cv.warpAffine(img,m,(width,length))
  
-    return res
+    return res
  
 #在主函数中调用上述函数
  
